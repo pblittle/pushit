@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby
+
+$:.unshift File.expand_path("../../lib", __FILE__)
+
+require 'optparse'
+require "pushit"
+
+ARGV.unshift "-h" if ARGV.size == 0
+
+options = OptionParser.new do |opts|
+  opts.banner = "Usage: #{$0} [--commit COMMIT]"
+  opts.on('--config CONFIG') do |config_file|
+    options[:config] = File.expand_path(config_file.to_s)
+  end
+  opts.on( '-h', '--help', 'Display this screen' ) do
+    puts opts
+    exit
+  end
+end
+options.parse!
+
+env = ARGV.shift
+
+begin
+  case env
+  when 'ec2'
+    pushit = Pushit::Ec2.new
+    pushit.send ARGV[0]
+  else
+    raise Exception, "No such env #{env}"
+  end
+rescue Exception => e
+  puts "Error: #{e.message}"
+  exit 1
+end
